@@ -374,6 +374,7 @@ protected:
     void addTessellationToPipeline(MTLRenderPipelineDescriptor* plDesc, const mvk::SPIRVTessReflectionData& reflectData, const VkPipelineTessellationStateCreateInfo* pTS);
     void addFragmentOutputToPipeline(MTLRenderPipelineDescriptor* plDesc, const VkGraphicsPipelineCreateInfo* pCreateInfo);
     bool isRenderingPoints(const VkGraphicsPipelineCreateInfo* pCreateInfo);
+    bool isRenderingLines(const VkGraphicsPipelineCreateInfo* pCreateInfo);
     bool isRasterizationDisabled(const VkGraphicsPipelineCreateInfo* pCreateInfo);
     bool isDepthClipNegativeOneToOne(const VkGraphicsPipelineCreateInfo* pCreateInfo);
 	bool verifyImplicitBuffer(bool needsBuffer, MVKShaderImplicitRezBinding& index, MVKShaderStage stage, const char* name);

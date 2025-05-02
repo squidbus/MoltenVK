@@ -374,6 +374,16 @@ void MVKPhysicalDevice::getFeatures(VkPhysicalDeviceFeatures2* features) {
 				inlineUniformBlockFeatures->descriptorBindingInlineUniformBlockUpdateAfterBind = supportedFeats13.descriptorBindingInlineUniformBlockUpdateAfterBind;
 				break;
 			}
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES: {
+				auto* lineRasterizationFeatures = (VkPhysicalDeviceLineRasterizationFeatures*)next;
+				lineRasterizationFeatures->rectangularLines = _properties.limits.strictLines;
+				lineRasterizationFeatures->bresenhamLines = !_properties.limits.strictLines;
+				lineRasterizationFeatures->smoothLines = false;
+				lineRasterizationFeatures->stippledRectangularLines = false;
+				lineRasterizationFeatures->stippledBresenhamLines = false;
+				lineRasterizationFeatures->stippledSmoothLines = false;
+				break;
+			}
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES: {
 				auto* maintenace4Features = (VkPhysicalDeviceMaintenance4Features*)next;
 				maintenace4Features->maintenance4 = supportedFeats13.maintenance4;
@@ -950,6 +960,11 @@ void MVKPhysicalDevice::getProperties(VkPhysicalDeviceProperties2* properties) {
 				inlineUniformBlockProps->maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks = supportedProps13.maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks;
 				inlineUniformBlockProps->maxDescriptorSetInlineUniformBlocks = supportedProps13.maxDescriptorSetInlineUniformBlocks;
 				inlineUniformBlockProps->maxDescriptorSetUpdateAfterBindInlineUniformBlocks = supportedProps13.maxDescriptorSetUpdateAfterBindInlineUniformBlocks;
+				break;
+			}
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES: {
+				auto* lineRasterizationProps = (VkPhysicalDeviceLineRasterizationProperties*)next;
+				lineRasterizationProps->lineSubPixelPrecisionBits = 8;
 				break;
 			}
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES: {

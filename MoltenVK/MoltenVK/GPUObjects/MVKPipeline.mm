@@ -747,6 +747,18 @@ void MVKGraphicsPipeline::initSampleLocations(const VkGraphicsPipelineCreateInfo
 				break;
 		}
 	}
+
+	if (_isRasterizing && pCreateInfo->pMultisampleState && !getDeviceProperties().limits.strictLines && isRenderingLines(pCreateInfo)) {
+		const auto numSamples = mvkSampleCountFromVkSampleCountFlagBits(pCreateInfo->pMultisampleState->rasterizationSamples);
+		if (numSamples > 1) {
+			// If we are rendering lines multi-sampled, fix sample positions to the center of the pixel to meet Bresenham line specification.
+			_sampleLocationsEnable = true;
+			_sampleLocations.clear();
+			for (uint32_t sample = 0; sample < numSamples; sample++) {
+				_sampleLocations.push_back({0.5f, 0.5f});
+			}
+		}
+	}
 }
 
 // Constructs the underlying Metal render pipeline.
@@ -2098,6 +2110,19 @@ bool MVKGraphicsPipeline::isRenderingPoints(const VkGraphicsPipelineCreateInfo* 
 			 (pCreateInfo->pInputAssemblyState->topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST)) ||
 			(pCreateInfo->pRasterizationState && 
 			 (pCreateInfo->pRasterizationState->polygonMode == VK_POLYGON_MODE_POINT) &&
+			 !isDynamicState(PolygonMode)));
+}
+
+// We render lines using a fixed set of sample positions, to properly support Bresenham lines
+// as defined by the Vulkan specification.
+bool MVKGraphicsPipeline::isRenderingLines(const VkGraphicsPipelineCreateInfo* pCreateInfo) {
+	return ((pCreateInfo->pInputAssemblyState &&
+			 (pCreateInfo->pInputAssemblyState->topology == VK_PRIMITIVE_TOPOLOGY_LINE_LIST ||
+			  pCreateInfo->pInputAssemblyState->topology == VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY ||
+              pCreateInfo->pInputAssemblyState->topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+              pCreateInfo->pInputAssemblyState->topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY)) ||
+			(pCreateInfo->pRasterizationState &&
+			 (pCreateInfo->pRasterizationState->polygonMode == VK_POLYGON_MODE_LINE) &&
 			 !isDynamicState(PolygonMode)));
 }
 
