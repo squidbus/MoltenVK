@@ -2641,6 +2641,22 @@ MTLSamplerDescriptor* MVKSampler::newMTLSamplerDescriptor(const VkSamplerCreateI
 		mtlSampDesc.compareFunction = mvkMTLCompareFunctionFromVkCompareOp(pCreateInfo->compareOp);
 	}
 
+#if MVK_XCODE_26
+    for (const auto* next = (const VkBaseInStructure*)pCreateInfo->pNext; next; next = next->pNext) {
+		switch (next->sType) {
+			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO: {
+				const VkSamplerReductionModeCreateInfo* reductionModeInfo = (const VkSamplerReductionModeCreateInfo*)next;
+				if (getMetalFeatures().samplerReductionMode) {
+					mtlSampDesc.reductionMode = mvkMTLSamplerReductionModeFromVkSamplerReductionMode(reductionModeInfo->reductionMode);
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+#endif
+
 	return mtlSampDesc;
 }
 
@@ -2651,9 +2667,6 @@ MVKSampler::MVKSampler(MVKDevice* device, const VkSamplerCreateInfo* pCreateInfo
 			case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR: {
 				const VkSamplerYcbcrConversionInfoKHR* sampConvInfo = (const VkSamplerYcbcrConversionInfoKHR*)next;
 				_ycbcrConversion = (MVKSamplerYcbcrConversion*)(sampConvInfo->conversion);
-				break;
-			}
-			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO: {
 				break;
 			}
 			default:

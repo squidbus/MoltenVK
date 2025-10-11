@@ -864,8 +864,8 @@ void MVKPhysicalDevice::getProperties(VkPhysicalDeviceProperties2* properties) {
 	supportedProps12.supportedStencilResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;	// Metal allows you to set the stencil resolve filter to either Sample0 or the same sample used for depth resolve. This is impossible to express in Vulkan.
 	supportedProps12.independentResolveNone = true;
 	supportedProps12.independentResolve = true;
-	supportedProps12.filterMinmaxSingleComponentFormats = false;
-	supportedProps12.filterMinmaxImageComponentMapping = false;
+	supportedProps12.filterMinmaxSingleComponentFormats = _metalFeatures.samplerReductionMode;
+	supportedProps12.filterMinmaxImageComponentMapping = _metalFeatures.samplerReductionMode;
 	supportedProps12.maxTimelineSemaphoreValueDifference = std::numeric_limits<uint64_t>::max();
 	supportedProps12.framebufferIntegerColorSampleCounts = _metalFeatures.supportedSampleCounts;
 
@@ -2429,8 +2429,9 @@ void MVKPhysicalDevice::initMetalFeatures() {
 #endif
 
 #if MVK_XCODE_26
-	_metalFeatures.samplerMipLodBias = mvkOSVersionIsAtLeast(26.0) && supportsMTLGPUFamily(Apple10);
-	_metalFeatures.depthBoundsTest = mvkOSVersionIsAtLeast(26.0) && supportsMTLGPUFamily(Apple10);
+	_metalFeatures.samplerMipLodBias = supportsMTLGPUFamily(Apple10);
+	_metalFeatures.depthBoundsTest = supportsMTLGPUFamily(Apple10);
+	_metalFeatures.samplerReductionMode = supportsMTLGPUFamily(Apple10);
 #endif
 
 	// GPU-specific features
@@ -2935,7 +2936,7 @@ void MVKPhysicalDevice::initFeatures() {
 	_vulkan12NoExtFeatures.samplerMirrorClampToEdge = _metalFeatures.samplerMirrorClampToEdge;
 	_vulkan12NoExtFeatures.drawIndirectCount = false;
 	_vulkan12NoExtFeatures.descriptorIndexing = _metalFeatures.arrayOfTextures && _metalFeatures.arrayOfSamplers;
-	_vulkan12NoExtFeatures.samplerFilterMinmax = false;
+	_vulkan12NoExtFeatures.samplerFilterMinmax = _metalFeatures.samplerReductionMode;
 	_vulkan12NoExtFeatures.shaderOutputViewportIndex = _features.multiViewport;
 	_vulkan12NoExtFeatures.shaderOutputLayer = _metalFeatures.layeredRendering;
 	_vulkan12NoExtFeatures.subgroupBroadcastDynamicId = _metalFeatures.simdPermute || _metalFeatures.quadPermute;
@@ -3658,6 +3659,9 @@ void MVKPhysicalDevice::initExtensions() {
 	}
 	if (!_metalFeatures.placementHeaps) {
 		pWritableExtns->vk_EXT_image_2d_view_of_3d.enabled = false;
+	}
+	if (!_metalFeatures.samplerReductionMode) {
+		pWritableExtns->vk_EXT_sampler_filter_minmax.enabled = false;
 	}
 
     // The relevant functions are not available if not built with Xcode 14.

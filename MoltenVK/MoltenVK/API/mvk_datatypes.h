@@ -316,6 +316,16 @@ MTLSamplerMinMagFilter mvkMTLSamplerMinMagFilterFromVkFilter(VkFilter vkFilter);
  */
 MTLSamplerMipFilter mvkMTLSamplerMipFilterFromVkSamplerMipmapMode(VkSamplerMipmapMode vkMode);
 
+#if MVK_XCODE_26
+
+/**
+ * Returns the Metal MTLSamplerReductionMode corresponding to the specified Vulkan VkSamplerReductionMode,
+ * or returns MTLSamplerReductionModeWeightedAverage if no corresponding MTLSamplerMipFilter exists.
+ */
+MTLSamplerReductionMode mvkMTLSamplerReductionModeFromVkSamplerReductionMode(VkSamplerReductionMode vkMode);
+
+#endif
+
 
 #pragma mark -
 #pragma mark Render pipeline
