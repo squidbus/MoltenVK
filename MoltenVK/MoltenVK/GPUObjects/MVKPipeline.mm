@@ -1934,7 +1934,9 @@ void MVKGraphicsPipeline::addFragmentOutputToPipeline(MTLRenderPipelineDescripto
 			uint32_t caLoc = _colorAttachmentLocations[caIdx];
 			if (caLoc == VK_ATTACHMENT_UNUSED) { continue; }
 
-			MTLPixelFormat mtlPixFmt = getPixelFormats()->getMTLPixelFormat(pRendInfo->pColorAttachmentFormats[caIdx]);
+			VkFormat attachFmt = pRendInfo->pColorAttachmentFormats[caIdx];
+			MTLPixelFormat mtlPixFmt = getPixelFormats()->getMTLPixelFormat(attachFmt);
+			bool supportsBlend = getPixelFormats()->getCapabilities(mtlPixFmt) & kMVKMTLFmtCapsBlend;
 			MTLRenderPipelineColorAttachmentDescriptor* colorDesc = plDesc.colorAttachments[caLoc];
             colorDesc.pixelFormat = mtlPixFmt;
 
@@ -1950,7 +1952,7 @@ void MVKGraphicsPipeline::addFragmentOutputToPipeline(MTLRenderPipelineDescripto
             // Don't set the blend state if we're not using this attachment.
             // The pixel format will be MTLPixelFormatInvalid in that case, and
             // Metal asserts if we turn on blending with that pixel format.
-            if (mtlPixFmt) {
+            if (mtlPixFmt && supportsBlend) {
                 colorDesc.blendingEnabled = pCA->blendEnable;
                 colorDesc.rgbBlendOperation = mvkMTLBlendOperationFromVkBlendOp(pCA->colorBlendOp);
                 colorDesc.sourceRGBBlendFactor = mvkMTLBlendFactorFromVkBlendFactor(pCA->srcColorBlendFactor);
@@ -1964,6 +1966,8 @@ void MVKGraphicsPipeline::addFragmentOutputToPipeline(MTLRenderPipelineDescripto
 					plDesc.logicOperationMVK = mvkMTLLogicOperationFromVkLogicOp(pCreateInfo->pColorBlendState->logicOp);
 				}
 #endif
+            } else if (mtlPixFmt && !supportsBlend) {
+                reportWarning(VK_ERROR_FEATURE_NOT_PRESENT, "Blending is enabled for attachment with format %s, which does not support it.", getPixelFormats()->getName(attachFmt));
             }
         }
     }
