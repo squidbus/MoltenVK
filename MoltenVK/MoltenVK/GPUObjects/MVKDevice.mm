@@ -1443,7 +1443,7 @@ void MVKPhysicalDevice::populateDeviceIDProperties(VkPhysicalDeviceVulkan11Prope
 
 void MVKPhysicalDevice::populateSubgroupProperties(VkPhysicalDeviceVulkan11Properties* pVk11Props) {
 	pVk11Props->subgroupSize = _metalFeatures.maxSubgroupSize;
-	pVk11Props->subgroupSupportedStages = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
+	pVk11Props->subgroupSupportedStages = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT | VK_SHADER_STAGE_VERTEX_BIT;
 	if (_features.tessellationShader) {
 		pVk11Props->subgroupSupportedStages |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 	}
@@ -2752,7 +2752,8 @@ void MVKPhysicalDevice::initFeatures() {
     _features.depthBiasClamp = true;
     _features.fillModeNonSolid = true;
     _features.largePoints = true;
-	_features.wideLines = getMVKConfig().useMetalPrivateAPI;
+    _features.geometryShader = true;
+	_features.wideLines = true; // getMVKConfig().useMetalPrivateAPI;
     _features.alphaToOne = true;
     _features.samplerAnisotropy = true;
     _features.shaderImageGatherExtended = true;
